@@ -1,0 +1,319 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Annual Sales Commission Dashboard</title>
+    <style>
+        body {
+            font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+            background-color: #f0f2f5;
+            margin: 0;
+            padding: 30px;
+            color: #333;
+        }
+        .dashboard-container {
+            max-width: 1200px;
+            margin: 0 auto;
+            background: #fff;
+            padding: 30px;
+            border-radius: 12px;
+            box-shadow: 0 4px 20px rgba(0,0,0,0.08);
+        }
+        h1 {
+            text-align: center;
+            color: #1a73e8;
+            margin-bottom: 5px;
+        }
+        .quota-banner {
+            text-align: center;
+            font-size: 15px;
+            color: #666;
+            margin-bottom: 30px;
+            font-style: italic;
+        }
+        .quarter-section {
+            margin-bottom: 35px;
+            border: 1px solid #e0e0e0;
+            border-radius: 8px;
+            overflow: hidden;
+            box-shadow: 0 2px 5px rgba(0,0,0,0.02);
+        }
+        .quarter-header {
+            background-color: #1a73e8;
+            color: white;
+            padding: 12px 20px;
+            font-size: 18px;
+            font-weight: bold;
+        }
+        table {
+            width: 100%;
+            border-collapse: collapse;
+            text-align: left;
+            background: white;
+        }
+        th {
+            background-color: #f8f9fa;
+            color: #5f6368;
+            font-weight: 600;
+            padding: 12px;
+            border-bottom: 2px solid #e0e0e0;
+            font-size: 14px;
+        }
+        td {
+            padding: 10px 12px;
+            border-bottom: 1px solid #eee;
+            vertical-align: middle;
+        }
+        .month-name {
+            font-weight: bold;
+            color: #202124;
+            width: 12%;
+        }
+        input[type="number"] {
+            width: 90%;
+            padding: 8px;
+            border: 1px solid #dadce0;
+            border-radius: 4px;
+            font-size: 14px;
+            transition: border-color 0.2s;
+        }
+        input[type="number"]:focus {
+            border-color: #1a73e8;
+            outline: none;
+        }
+        .pct-badge {
+            display: inline-block;
+            padding: 4px 8px;
+            border-radius: 4px;
+            font-weight: bold;
+            font-size: 13px;
+        }
+        .under-track { background-color: #fce8e6; color: #c5221f; }
+        .on-track { background-color: #e6f4ea; color: #137333; }
+        
+        .calc-output {
+            font-family: monospace;
+            font-weight: bold;
+            font-size: 15px;
+            color: #3c4043;
+        }
+        .quarter-summary-row {
+            background-color: #f1f3f4;
+            font-weight: bold;
+        }
+        .quarter-summary-row td {
+            border-top: 2px solid #cbd5e1;
+            color: #1f2937;
+        }
+        .grand-total-card {
+            background: #e8f0fe;
+            border: 2px solid #1a73e8;
+            padding: 20px;
+            border-radius: 8px;
+            display: flex;
+            justify-content: space-around;
+            align-items: center;
+            margin-top: 20px;
+        }
+        .stat-box {
+            text-align: center;
+        }
+        .stat-box label {
+            display: block;
+            font-size: 14px;
+            color: #5f6368;
+            text-transform: uppercase;
+            margin-bottom: 5px;
+            font-weight: 600;
+        }
+        .stat-box span {
+            font-size: 24px;
+            font-weight: bold;
+            color: #1a73e8;
+        }
+        .stat-box .total-payout {
+            color: #137333;
+        }
+    </style>
+</head>
+<body>
+
+<div class="dashboard-container">
+    <h1>Sales Attainment & Commission Dashboard</h1>
+    <div class="quota-banner">Monthly Target Quotas: <strong>$700 MRR</strong> & <strong>$6,000 NRR</strong></div>
+
+    <div id="quarters-container"></div>
+
+    <div class="grand-total-card">
+        <div class="stat-box">
+            <label>Annual MRR Attainment</label>
+            <span id="annual-mrr-pct">0.0%</span>
+        </div>
+        <div class="stat-box">
+            <label>Annual NRR Attainment</label>
+            <span id="annual-nrr-pct">0.0%</span>
+        </div>
+        <div class="stat-box">
+            <label>Total Commissions Earned</label>
+            <span id="annual-payout" class="total-payout">$0.00</span>
+        </div>
+    </div>
+</div>
+
+<script>
+// Dashboard Configuration Structure
+const QUOTAS = { mrr: 700, nrr: 6000 };
+const MONTHS_DATA = [
+    { name: "January", q: 1 }, { name: "February", q: 1 }, { name: "March", q: 1 },
+    { name: "April", q: 2 }, { name: "May", q: 2 }, { name: "June", q: 2 },
+    { name: "July", q: 3 }, { name: "August", q: 3 }, { name: "September", q: 3 },
+    { name: "October", q: 4 }, { name: "November", q: 4 }, { name: "December", q: 4 }
+];
+
+// Tiered Multiplier Logic functions
+function getMrrCommission(mrr) {
+    if (mrr <= 349.93) return mrr * (0.3705 / 100);
+    if (mrr <= 489.93) return mrr * (0.9634 / 100);
+    if (mrr <= 699.93) return mrr * (5.5212 / 100);
+    return mrr * (0.65 / 100);
+}
+
+function getNrrCommission(nrr) {
+    if (nrr <= 2999.40) return nrr * (0.0204 / 100);
+    if (nrr <= 4199.40) return nrr * (0.0388 / 100);
+    if (nrr <= 5999.40) return nrr * (0.2801 / 100);
+    return nrr * (0.042 / 100);
+}
+
+// Generate UI Spreadsheet tables dynamically
+function buildDashboard() {
+    const container = document.getElementById('quarters-container');
+    
+    for (let q = 1; q <= 4; q++) {
+        const qMonths = MONTHS_DATA.filter(m => m.q === q);
+        let html = `
+            <div class="quarter-section">
+                <div class="quarter-header">Quarter ${q}</div>
+                <table>
+                    <thead>
+                        <tr>
+                            <th class="month-name">Month</th>
+                            <th style="width: 18%;">Actual MRR ($)</th>
+                            <th style="width: 15%;">MRR % Track</th>
+                            <th style="width: 18%;">Actual NRR ($)</th>
+                            <th style="width: 15%;">NRR % Track</th>
+                            <th style="width: 22%;">Commissions Earned</th>
+                        </tr>
+                    </thead>
+                    <tbody>
+        `;
+
+        qMonths.forEach(month => {
+            const id = month.name.toLowerCase();
+            html += `
+                <tr id="row-${id}">
+                    <td class="month-name">${month.name}</td>
+                    <td><input type="number" id="mrr-${id}" oninput="updateDashboard()" placeholder="0.00" step="0.01" min="0"></td>
+                    <td><span id="mrr-pct-${id}" class="pct-badge under-track">0.0%</span></td>
+                    <td><input type="number" id="nrr-${id}" oninput="updateDashboard()" placeholder="0.00" step="0.01" min="0"></td>
+                    <td><span id="nrr-pct-${id}" class="pct-badge under-track">0.0%</span></td>
+                    <td><span id="payout-${id}" class="calc-output">$0.00</span></td>
+                </tr>
+            `;
+        });
+
+        // Add Quarter Summary row
+        html += `
+                        <tr class="quarter-summary-row">
+                            <td>Q${q} Total</td>
+                            <td id="q${q}-mrr-total">$0.00</td>
+                            <td><span id="q${q}-mrr-pct" class="pct-badge under-track">0.0%</span></td>
+                            <td id="q${q}-nrr-total">$0.00</td>
+                            <td><span id="q${q}-nrr-pct" class="pct-badge under-track">0.0%</span></td>
+                            <td id="q${q}-payout" class="calc-output">$0.00</td>
+                        </tr>
+                    </tbody>
+                </table>
+            </div>
+        `;
+        container.innerHTML += html;
+    }
+}
+
+// Perform calculations and live updates
+function updateDashboard() {
+    let grandTotalMrr = 0, grandTotalNrr = 0, grandTotalPayout = 0;
+    let quarterData = { 1: {mrr:0, nrr:0, pay:0}, 2: {mrr:0, nrr:0, pay:0}, 3: {mrr:0, nrr:0, pay:0}, 4: {mrr:0, nrr:0, pay:0} };
+
+    MONTHS_DATA.forEach(month => {
+        const id = month.name.toLowerCase();
+        const mrrVal = parseFloat(document.getElementById(`mrr-${id}`).value) || 0;
+        const nrrVal = parseFloat(document.getElementById(`nrr-${id}`).value) || 0;
+
+        // 1. Calculate Monthly Attainment Track Percentages
+        const mrrPct = (mrrVal / QUOTAS.mrr) * 100;
+        const nrrPct = (nrrVal / QUOTAS.nrr) * 100;
+
+        // Update Monthly Badges & Styling
+        const mrrBadge = document.getElementById(`mrr-pct-${id}`);
+        mrrBadge.innerText = mrrPct.toFixed(1) + '%';
+        mrrBadge.className = `pct-badge ${mrrPct >= 100 ? 'on-track' : 'under-track'}`;
+
+        const nrrBadge = document.getElementById(`nrr-pct-${id}`);
+        nrrBadge.innerText = nrrPct.toFixed(1) + '%';
+        nrrBadge.className = `pct-badge ${nrrPct >= 100 ? 'on-track' : 'under-track'}`;
+
+        // 2. Calculate Monthly Commissions Payouts
+        const mrrComm = getMrrCommission(mrrVal);
+        const nrrComm = getNrrCommission(nrrVal);
+        const totalComm = mrrComm + nrrComm;
+        
+        document.getElementById(`payout-${id}`).innerText = '$' + totalComm.toFixed(2);
+
+        // Accumulate Quarter and Grand Totals
+        quarterData[month.q].mrr += mrrVal;
+        quarterData[month.q].nrr += nrrVal;
+        quarterData[month.q].pay += totalComm;
+
+        grandTotalMrr += mrrVal;
+        grandTotalNrr += nrrVal;
+        grandTotalPayout += totalComm;
+    });
+
+    // 3. Update Quarter Totals and Targets (Quarter Quota = Monthly Quota * 3)
+    for (let q = 1; q <= 4; q++) {
+        const qMrrQuota = QUOTAS.mrr * 3;
+        const qNrrQuota = QUOTAS.nrr * 3;
+
+        const qMrrPct = (quarterData[q].mrr / qMrrQuota) * 100;
+        const qNrrPct = (quarterData[q].nrr / qNrrQuota) * 100;
+
+        document.getElementById(`q${q}-mrr-total`).innerText = '$' + quarterData[q].mrr.toFixed(2);
+        document.getElementById(`q${q}-nrr-total`).innerText = '$' + quarterData[q].nrr.toFixed(2);
+        document.getElementById(`q${q}-payout`).innerText = '$' + quarterData[q].pay.toFixed(2);
+
+        const qMrrBadge = document.getElementById(`q${q}-mrr-pct`);
+        qMrrBadge.innerText = qMrrPct.toFixed(1) + '%';
+        qMrrBadge.className = `pct-badge ${qMrrPct >= 100 ? 'on-track' : 'under-track'}`;
+
+        const qNrrBadge = document.getElementById(`q${q}-nrr-pct`);
+        qNrrBadge.innerText = qNrrPct.toFixed(1) + '%';
+        qNrrBadge.className = `pct-badge ${qNrrPct >= 100 ? 'on-track' : 'under-track'}`;
+    }
+
+    // 4. Update Grand Annual Totals Card
+    const annualMrrPct = (grandTotalMrr / (QUOTAS.mrr * 12)) * 100;
+    const annualNrrPct = (grandTotalNrr / (QUOTAS.nrr * 12)) * 100;
+
+    document.getElementById('annual-mrr-pct').innerText = annualMrrPct.toFixed(1) + '%';
+    document.getElementById('annual-nrr-pct').innerText = annualNrrPct.toFixed(1) + '%';
+    document.getElementById('annual-payout').innerText = '$' + grandTotalPayout.toFixed(2);
+}
+
+// Run application setup on start
+buildDashboard();
+</script>
+
+</body>
+</html>
