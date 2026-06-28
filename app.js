@@ -1,0 +1,158 @@
+// Base Configuration Configs
+const QUOTAS = { mrr: 700, nrr: 6000 };
+const SEASONS = [
+    { name: "January", q: 1, index: 0 }, { name: "February", q: 1, index: 1 }, { name: "March", q: 1, index: 2 },
+    { name: "April", q: 2, index: 3 }, { name: "May", q: 2, index: 4 }, { name: "June", q: 2, index: 5 },
+    { name: "July", q: 3, index: 6 }, { name: "August", q: 3, index: 7 }, { name: "September", q: 3, index: 8 },
+    { name: "October", q: 4, index: 9 }, { name: "November", q: 4, index: 10 }, { name: "December", q: 4, index: 11 }
+];
+
+// Calculation Block for Scenario A Progressive Tiered Rules
+function calcMrrProgressive(mrr) {
+    let payout = 0; let rem = mrr;
+    if (rem > 0) { let chunk = Math.min(rem, 349.93); payout += chunk * 0.3705; rem -= chunk; }
+    if (rem > 0) { let chunk = Math.min(rem, 140.00); payout += chunk * 0.9634; rem -= chunk; }
+    if (rem > 0) { let chunk = Math.min(rem, 210.00); payout += chunk * 5.5212; rem -= chunk; }
+    if (rem > 0) { payout += rem * 0.65; }
+    return payout;
+}
+
+function calcNrrProgressive(nrr) {
+    let payout = 0; let rem = nrr;
+    if (rem > 0) { let chunk = Math.min(rem, 2999.40); payout += chunk * 0.0204; rem -= chunk; }
+    if (rem > 0) { let chunk = Math.min(rem, 1200.00); payout += chunk * 0.0388; rem -= chunk; }
+    if (rem > 0) { let chunk = Math.min(rem, 1800.00); payout += chunk * 0.2801; rem -= chunk; }
+    if (rem > 0) { payout += rem * 0.042; }
+    return payout;
+}
+
+// Build Spreadsheet UI Dynamic DOM Tree Components
+function initSpreadsheet() {
+    const parent = document.getElementById('spreadsheet-workspace');
+    
+    for (let q = 1; q <= 4; q++) {
+        const qMonths = SEASONS.filter(m => m.q === q);
+        let markup = `
+            <div class="quarter-block">
+                <div class="quarter-title-bar">Quarter ${q} Block</div>
+                <table>
+                    <thead>
+                        <tr>
+                            <th class="month-col">Month</th>
+                            <th style="width: 18%;">Actual MRR achieved</th>
+                            <th style="width: 15%;">MRR % Track</th>
+                            <th style="width: 18%;">Actual NRR Achieved</th>
+                            <th style="width: 15%;">NRR % Track</th>
+                            <th style="width: 22%;">Commissions Earned</th>
+                        </tr>
+                    </thead>
+                    <tbody>
+        `;
+
+        qMonths.forEach(month => {
+            const key = month.name.toLowerCase();
+            markup += `
+                <tr id="row-${key}">
+                    <td class="month-col">${month.name}</td>
+                    <td><input type="number" id="mrr-${key}" oninput="refreshCalculation()" placeholder="0.00" step="0.01" min="0"></td>
+                    <td><span id="mrr-badge-${key}" class="odoo-badge status-under">0.0%</span></td>
+                    <td><input type="number" id="nrr-${key}" oninput="refreshCalculation()" placeholder="0.00" step="0.01" min="0"></td>
+                    <td><span id="nrr-badge-${key}" class="odoo-badge status-under">0.0%</span></td>
+                    <td><span id="payout-${key}" class="payout-text">$0.00</span></td>
+                </tr>
+            `;
+        });
+
+        markup += `
+                        <tr class="summary-row">
+                            <td>Q${q} Summary</td>
+                            <td id="q${q}-mrr-sum">$0.00</td>
+                            <td><span id="q${q}-mrr-pct" class="odoo-badge status-under">0.0%</span></td>
+                            <td id="q${q}-nrr-sum">$0.00</td>
+                            <td><span id="q${q}-nrr-pct" class="odoo-badge status-under">0.0%</span></td>
+                            <td id="q${q}-payout-sum" class="payout-text">$0.00</td>
+                        </tr>
+                    </tbody>
+                </table>
+            </div>
+        `;
+        parent.innerHTML += markup;
+    }
+}
+
+// Re-compile entries live and update YTD progress limits
+function refreshCalculation() {
+    let yearMrr = 0, yearNrr = 0, yearPayout = 0;
+    let tracking = { 1: {mrr:0, nrr:0, pay:0}, 2: {mrr:0, nrr:0, pay:0}, 3: {mrr:0, nrr:0, pay:0}, 4: {mrr:0, nrr:0, pay:0} };
+
+    // Get current calendar context safely
+    const currentMonthIndex = new Date().getMonth(); 
+    let activeMonthsCount = currentMonthIndex + 1; 
+
+    SEASONS.forEach(month => {
+        const key = month.name.toLowerCase();
+        const mrr = parseFloat(document.getElementById(`mrr-${key}`).value) || 0;
+        const nrr = parseFloat(document.getElementById(`nrr-${key}`).value) || 0;
+
+        const mrrPct = (mrr / QUOTAS.mrr) * 100;
+        const nrrPct = (nrr / QUOTAS.nrr) * 100;
+
+        const mBadge = document.getElementById(`mrr-badge-${key}`);
+        mBadge.innerText = mrrPct.toFixed(1) + '%';
+        mBadge.className = `odoo-badge ${mrrPct >= 100 ? 'status-track' : 'status-under'}`;
+
+        const nBadge = document.getElementById(`nrr-badge-${key}`);
+        nBadge.innerText = nrrPct.toFixed(1) + '%';
+        nBadge.className = `odoo-badge ${nrrPct >= 100 ? 'status-track' : 'status-under'}`;
+
+        const mrrEarned = calcMrrProgressive(mrr);
+        const nrrEarned = calcNrrProgressive(nrr);
+        const combined = mrrEarned + nrrEarned;
+        
+        document.getElementById(`payout-${key}`).innerText = '$' + combined.toLocaleString(undefined, {minimumFractionDigits: 2, maximumFractionDigits: 2});
+
+        tracking[month.q].mrr += mrr;
+        tracking[month.q].nrr += nrr;
+        tracking[month.q].pay += combined;
+
+        // Skip calculations for months that haven't occurred yet this fiscal period
+        if (month.index <= currentMonthIndex) {
+            yearMrr += mrr;
+            yearNrr += nrr;
+        }
+        yearPayout += combined; 
+    });
+
+    for (let q = 1; q <= 4; q++) {
+        const qMrrGoal = QUOTAS.mrr * 3;
+        const qNrrGoal = QUOTAS.nrr * 3;
+
+        const qMrrPct = (tracking[q].mrr / qMrrGoal) * 100;
+        const qNrrPct = (tracking[q].nrr / qNrrGoal) * 100;
+
+        document.getElementById(`q${q}-mrr-sum`).innerText = '$' + tracking[q].mrr.toLocaleString(undefined, {minimumFractionDigits: 2});
+        document.getElementById(`q${q}-nrr-sum`).innerText = '$' + tracking[q].nrr.toLocaleString(undefined, {minimumFractionDigits: 2});
+        document.getElementById(`q${q}-payout-sum`).innerText = '$' + tracking[q].pay.toLocaleString(undefined, {minimumFractionDigits: 2});
+
+        const qM_Badge = document.getElementById(`q${q}-mrr-pct`);
+        qM_Badge.innerText = qMrrPct.toFixed(1) + '%';
+        qM_Badge.className = `odoo-badge ${qMrrPct >= 100 ? 'status-track' : 'status-under'}`;
+
+        const qN_Badge = document.getElementById(`q${q}-nrr-pct`);
+        qN_Badge.innerText = qNrrPct.toFixed(1) + '%';
+        qN_Badge.className = `odoo-badge ${qNrrPct >= 100 ? 'status-track' : 'status-under'}`;
+    }
+
+    const totalYearMrrPct = (yearMrr / (QUOTAS.mrr * activeMonthsCount)) * 100;
+    const totalYearNrrPct = (yearNrr / (QUOTAS.nrr * activeMonthsCount)) * 100;
+
+    document.getElementById('mrr-kpi-label').innerText = `YTD MRR Attainment Track (${activeMonthsCount} Mos)`;
+    document.getElementById('nrr-kpi-label').innerText = `YTD NRR Attainment Track (${activeMonthsCount} Mos)`;
+
+    document.getElementById('annual-mrr-pct').innerText = totalYearMrrPct.toFixed(1) + '%';
+    document.getElementById('annual-nrr-pct').innerText = totalYearNrrPct.toFixed(1) + '%';
+    document.getElementById('annual-payout').innerText = '$' + yearPayout.toLocaleString(undefined, {minimumFractionDigits: 2, maximumFractionDigits: 2});
+}
+
+// Start Runtime execution loop
+initSpreadsheet();
