@@ -3,250 +3,294 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Annual Sales Commission Dashboard</title>
+    <title>Odoo Spreadsheet - Sales Commission Module</title>
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700&display=swap" rel="stylesheet">
     <style>
+        /* ODOO BRAND VARIABLES */
+        :root {
+            --odoo-purple: #714B67;
+            --odoo-teal: #017E84;
+            --odoo-gray-dark: #4c4c4c;
+            --odoo-gray-medium: #dee2e6;
+            --odoo-gray-light: #f8f9fa;
+            --odoo-white: #ffffff;
+            --odoo-red-bg: #fce8e6;
+            --odoo-red-text: #c5221f;
+            --odoo-green-bg: #e6f4ea;
+            --odoo-green-text: #137333;
+        }
+
         body {
-            font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
-            background-color: #f0f2f5;
+            font-family: 'Inter', sans-serif;
+            background-color: #f1f3f5;
             margin: 0;
             padding: 30px;
-            color: #333;
+            color: var(--odoo-gray-dark);
         }
-        .dashboard-container {
-            max-width: 1200px;
+
+        .odoo-dashboard {
+            max-width: 1250px;
             margin: 0 auto;
-            background: #fff;
-            padding: 30px;
-            border-radius: 12px;
-            box-shadow: 0 4px 20px rgba(0,0,0,0.08);
-        }
-        h1 {
-            text-align: center;
-            color: #1a73e8;
-            margin-bottom: 5px;
-        }
-        .quota-banner {
-            text-align: center;
-            font-size: 15px;
-            color: #666;
-            margin-bottom: 30px;
-            font-style: italic;
-        }
-        .quarter-section {
-            margin-bottom: 35px;
-            border: 1px solid #e0e0e0;
-            border-radius: 8px;
+            background: var(--odoo-white);
+            border: 1px solid var(--odoo-gray-medium);
+            border-radius: 4px; /* Odoo typical flat/subtle rounding */
+            box-shadow: 0 4px 12px rgba(0,0,0,0.05);
             overflow: hidden;
-            box-shadow: 0 2px 5px rgba(0,0,0,0.02);
         }
-        .quarter-header {
-            background-color: #1a73e8;
-            color: white;
-            padding: 12px 20px;
-            font-size: 18px;
-            font-weight: bold;
+
+        /* Top Module Header Bar mimicking Odoo ERP Layout */
+        .odoo-top-bar {
+            background-color: var(--odoo-purple);
+            color: var(--odoo-white);
+            padding: 15px 25px;
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
         }
+
+        .odoo-top-bar h1 {
+            margin: 0;
+            font-size: 20px;
+            font-weight: 600;
+            letter-spacing: 0.5px;
+        }
+
+        .odoo-meta-info {
+            background-color: var(--odoo-white);
+            padding: 20px 25px;
+            border-bottom: 1px solid var(--odoo-gray-medium);
+            font-size: 14px;
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+        }
+
+        .quota-tag {
+            background-color: var(--odoo-gray-light);
+            border: 1px solid var(--odoo-gray-medium);
+            padding: 6px 12px;
+            border-radius: 3px;
+            font-weight: 500;
+        }
+
+        .quota-tag strong {
+            color: var(--odoo-purple);
+        }
+
+        /* Spreadsheet Quarter Layout Block */
+        .quarter-block {
+            margin: 25px;
+            border: 1px solid var(--odoo-gray-medium);
+            border-radius: 3px;
+            overflow: hidden;
+        }
+
+        .quarter-title-bar {
+            background-color: var(--odoo-gray-light);
+            border-bottom: 1px solid var(--odoo-gray-medium);
+            color: var(--odoo-purple);
+            font-weight: 600;
+            font-size: 15px;
+            padding: 10px 15px;
+        }
+
         table {
             width: 100%;
             border-collapse: collapse;
             text-align: left;
-            background: white;
-        }
-        th {
-            background-color: #f8f9fa;
-            color: #5f6368;
-            font-weight: 600;
-            padding: 12px;
-            border-bottom: 2px solid #e0e0e0;
+            background: var(--odoo-white);
             font-size: 14px;
         }
+
+        th {
+            background-color: var(--odoo-white);
+            color: var(--odoo-gray-dark);
+            font-weight: 600;
+            padding: 10px 15px;
+            border-bottom: 2px solid var(--odoo-purple);
+            text-transform: uppercase;
+            font-size: 12px;
+            letter-spacing: 0.5px;
+        }
+
         td {
-            padding: 10px 12px;
-            border-bottom: 1px solid #eee;
+            padding: 10px 15px;
+            border-bottom: 1px solid var(--odoo-gray-medium);
             vertical-align: middle;
         }
-        .month-name {
-            font-weight: bold;
-            color: #202124;
+
+        .month-col {
+            font-weight: 600;
+            color: #212529;
             width: 12%;
         }
+
+        /* Form Input Cells matching Odoo backend inputs */
         input[type="number"] {
-            width: 90%;
-            padding: 8px;
-            border: 1px solid #dadce0;
-            border-radius: 4px;
+            width: 85%;
+            padding: 6px 10px;
+            border: 1px solid #ccc;
+            border-radius: 3px;
             font-size: 14px;
-            transition: border-color 0.2s;
+            font-family: inherit;
+            transition: border-color 0.15s ease-in-out;
         }
+
         input[type="number"]:focus {
-            border-color: #1a73e8;
+            border-color: var(--odoo-purple);
             outline: none;
+            box-shadow: 0 0 0 2px rgba(113, 75, 103, 0.15);
         }
-        .pct-badge {
+
+        /* Progress & Track Pill Badges */
+        .odoo-badge {
             display: inline-block;
-            padding: 4px 8px;
-            border-radius: 4px;
-            font-weight: bold;
-            font-size: 13px;
+            padding: 3px 8px;
+            border-radius: 3px;
+            font-weight: 600;
+            font-size: 12px;
         }
-        .under-track { background-color: #fce8e6; color: #c5221f; }
-        .on-track { background-color: #e6f4ea; color: #137333; }
+        .status-under { background-color: var(--odoo-red-bg); color: var(--odoo-red-text); }
+        .status-track { background-color: var(--odoo-green-bg); color: var(--odoo-green-text); }
         
-        .calc-output {
+        .payout-text {
             font-family: monospace;
-            font-weight: bold;
-            font-size: 15px;
-            color: #3c4043;
-        }
-        .quarter-summary-row {
-            background-color: #f1f3f4;
-            font-weight: bold;
-        }
-        .quarter-summary-row td {
-            border-top: 2px solid #cbd5e1;
-            color: #1f2937;
-        }
-        .grand-total-card {
-            background: #e8f0fe;
-            border: 2px solid #1a73e8;
-            padding: 20px;
-            border-radius: 8px;
-            display: flex;
-            justify-content: space-around;
-            align-items: center;
-            margin-top: 20px;
-        }
-        .stat-box {
-            text-align: center;
-        }
-        .stat-box label {
-            display: block;
+            font-weight: 700;
             font-size: 14px;
-            color: #5f6368;
-            text-transform: uppercase;
-            margin-bottom: 5px;
+            color: #212529;
+        }
+
+        /* Odoo App Summary Footers */
+        .summary-row {
+            background-color: var(--odoo-gray-light);
             font-weight: 600;
         }
-        .stat-box span {
-            font-size: 24px;
-            font-weight: bold;
-            color: #1a73e8;
+        
+        .summary-row td {
+            border-top: 2px solid var(--odoo-gray-medium);
+            color: var(--odoo-purple);
         }
-        .stat-box .total-payout {
-            color: #137333;
+
+        /* Odoo KPI Widget Bottom Panel */
+        .odoo-kpi-panel {
+            background: var(--odoo-gray-light);
+            border-top: 1px solid var(--odoo-gray-medium);
+            padding: 25px;
+            display: grid;
+            grid-template-columns: repeat(3, 1fr);
+            gap: 20px;
+        }
+
+        .kpi-card {
+            background: var(--odoo-white);
+            border: 1px solid var(--odoo-gray-medium);
+            border-radius: 4px;
+            padding: 15px 20px;
+            text-align: left;
+        }
+
+        .kpi-card label {
+            display: block;
+            font-size: 12px;
+            color: #777;
+            text-transform: uppercase;
+            font-weight: 600;
+            margin-bottom: 5px;
+        }
+
+        .kpi-card span {
+            font-size: 26px;
+            font-weight: 700;
+            color: var(--odoo-purple);
+        }
+
+        .kpi-card .total-earnings {
+            color: var(--odoo-teal);
         }
     </style>
 </head>
 <body>
 
-<div class="dashboard-container">
-    <h1>Sales Attainment & Commission Dashboard</h1>
-    <div class="quota-banner">Monthly Target Quotas: <strong>$700 MRR</strong> & <strong>$6,000 NRR</strong> (Progressive Bracketed Logic)</div>
+<div class="odoo-dashboard">
+    <div class="odoo-top-bar">
+        <h1>Spreadsheet / Commission Engine</h1>
+        <span style="font-size: 13px; opacity: 0.9;">Scenario A • Progressive Bracket Logic</span>
+    </div>
 
-    <div id="quarters-container"></div>
+    <div class="odoo-meta-info">
+        <div style="font-weight: 500;">Annual Performance Strategy Dashboard</div>
+        <div class="quota-tag">Required Monthly Target Goals: <strong>$700 MRR</strong> & <strong>$6,000 NRR</strong></div>
+    </div>
 
-    <div class="grand-total-card">
-        <div class="stat-box">
-            <label>Annual MRR Attainment</label>
+    <div id="spreadsheet-workspace"></div>
+
+    <div class="odoo-kpi-panel">
+        <div class="kpi-card">
+            <label>Annual MRR Attainment Track</label>
             <span id="annual-mrr-pct">0.0%</span>
         </div>
-        <div class="stat-box">
-            <label>Annual NRR Attainment</label>
+        <div class="kpi-card">
+            <label>Annual NRR Attainment Track</label>
             <span id="annual-nrr-pct">0.0%</span>
         </div>
-        <div class="stat-box">
-            <label>Total Commissions Earned</label>
-            <span id="annual-payout" class="total-payout">$0.00</span>
+        <div class="kpi-card">
+            <label>Total Combined Commissions Payout</label>
+            <span id="annual-payout" class="total-earnings">$0.00</span>
         </div>
     </div>
 </div>
 
 <script>
-// Dashboard Configuration Structure
+// Base Data Settings
 const QUOTAS = { mrr: 700, nrr: 6000 };
-const MONTHS_DATA = [
+const SEASONS = [
     { name: "January", q: 1 }, { name: "February", q: 1 }, { name: "March", q: 1 },
     { name: "April", q: 2 }, { name: "May", q: 2 }, { name: "June", q: 2 },
     { name: "July", q: 3 }, { name: "August", q: 3 }, { name: "September", q: 3 },
     { name: "October", q: 4 }, { name: "November", q: 4 }, { name: "December", q: 4 }
 ];
 
-// Progressive Bracket Calculation for MRR
-function getMrrCommission(mrr) {
-    let totalComm = 0;
-    let remaining = mrr;
+// Calculation Block for Scenario A Progressive Tiered Rules
+function calcMrrProgressive(mrr) {
+    let payout = 0;
+    let rem = mrr;
 
-    // Tier 1: Up to 349.93
-    if (remaining > 0) {
-        let chunk = Math.min(remaining, 349.93);
-        totalComm += chunk * 0.3705;
-        remaining -= chunk;
-    }
-    // Tier 2: 349.94 to 489.93 (Width is 140.00)
-    if (remaining > 0) {
-        let chunk = Math.min(remaining, 140.00);
-        totalComm += chunk * 0.9634;
-        remaining -= chunk;
-    }
-    // Tier 3: 489.94 to 699.93 (Width is 210.00)
-    if (remaining > 0) {
-        let chunk = Math.min(remaining, 210.00);
-        totalComm += chunk * 5.5212;
-        remaining -= chunk;
-    }
-    // Tier 4: Over 699.93
-    if (remaining > 0) {
-        totalComm += remaining * 0.65;
-    }
-    return totalComm;
+    if (rem > 0) { let chunk = Math.min(rem, 349.93); payout += chunk * 0.3705; rem -= chunk; }
+    if (rem > 0) { let chunk = Math.min(rem, 140.00); payout += chunk * 0.9634; rem -= chunk; }
+    if (rem > 0) { let chunk = Math.min(rem, 210.00); payout += chunk * 5.5212; rem -= chunk; }
+    if (rem > 0) { payout += rem * 0.65; }
+    return payout;
 }
 
-// Progressive Bracket Calculation for NRR
-function getNrrCommission(nrr) {
-    let totalComm = 0;
-    let remaining = nrr;
+function calcNrrProgressive(nrr) {
+    let payout = 0;
+    let rem = nrr;
 
-    // Tier 1: Up to 2999.40
-    if (remaining > 0) {
-        let chunk = Math.min(remaining, 2999.40);
-        totalComm += chunk * 0.0204;
-        remaining -= chunk;
-    }
-    // Tier 2: 2999.41 to 4199.40 (Width is 1200.00)
-    if (remaining > 0) {
-        let chunk = Math.min(remaining, 1200.00);
-        totalComm += chunk * 0.0388;
-        remaining -= chunk;
-    }
-    // Tier 3: 4199.41 to 5999.40 (Width is 1800.00)
-    if (remaining > 0) {
-        let chunk = Math.min(remaining, 1800.00);
-        totalComm += chunk * 0.2801;
-        remaining -= chunk;
-    }
-    // Tier 4: Over 5999.40
-    if (remaining > 0) {
-        totalComm += remaining * 0.042;
-    }
-    return totalComm;
+    if (rem > 0) { let chunk = Math.min(rem, 2999.40); payout += chunk * 0.0204; rem -= chunk; }
+    if (rem > 0) { let chunk = Math.min(rem, 1200.00); payout += chunk * 0.0388; rem -= chunk; }
+    if (rem > 0) { let chunk = Math.min(rem, 1800.00); payout += chunk * 0.2801; rem -= chunk; }
+    if (rem > 0) { payout += rem * 0.042; }
+    return payout;
 }
 
-// Generate UI Spreadsheet tables dynamically
-function buildDashboard() {
-    const container = document.getElementById('quarters-container');
+// Assemble tables into UI layout
+function initSpreadsheet() {
+    const parent = document.getElementById('spreadsheet-workspace');
     
     for (let q = 1; q <= 4; q++) {
-        const qMonths = MONTHS_DATA.filter(m => m.q === q);
-        let html = `
-            <div class="quarter-section">
-                <div class="quarter-header">Quarter ${q}</div>
+        const qMonths = SEASONS.filter(m => m.q === q);
+        let markup = `
+            <div class="quarter-block">
+                <div class="quarter-title-bar">Quarter ${q} Block</div>
                 <table>
                     <thead>
                         <tr>
-                            <th class="month-name">Month</th>
-                            <th style="width: 18%;">Actual MRR ($)</th>
+                            <th class="month-col">Month</th>
+                            <th style="width: 18%;">Actual MRR achieved</th>
                             <th style="width: 15%;">MRR % Track</th>
-                            <th style="width: 18%;">Actual NRR ($)</th>
+                            <th style="width: 18%;">Actual NRR Achieved</th>
                             <th style="width: 15%;">NRR % Track</th>
                             <th style="width: 22%;">Commissions Earned</th>
                         </tr>
@@ -255,109 +299,107 @@ function buildDashboard() {
         `;
 
         qMonths.forEach(month => {
-            const id = month.name.toLowerCase();
-            html += `
-                <tr id="row-${id}">
-                    <td class="month-name">${month.name}</td>
-                    <td><input type="number" id="mrr-${id}" oninput="updateDashboard()" placeholder="0.00" step="0.01" min="0"></td>
-                    <td><span id="mrr-pct-${id}" class="pct-badge under-track">0.0%</span></td>
-                    <td><input type="number" id="nrr-${id}" oninput="updateDashboard()" placeholder="0.00" step="0.01" min="0"></td>
-                    <td><span id="nrr-pct-${id}" class="pct-badge under-track">0.0%</span></td>
-                    <td><span id="payout-${id}" class="calc-output">$0.00</span></td>
+            const key = month.name.toLowerCase();
+            markup += `
+                <tr id="row-${key}">
+                    <td class="month-col">${month.name}</td>
+                    <td><input type="number" id="mrr-${key}" oninput="refreshCalculation()" placeholder="0.00" step="0.01" min="0"></td>
+                    <td><span id="mrr-badge-${key}" class="odoo-badge status-under">0.0%</span></td>
+                    <td><input type="number" id="nrr-${key}" oninput="refreshCalculation()" placeholder="0.00" step="0.01" min="0"></td>
+                    <td><span id="nrr-badge-${key}" class="odoo-badge status-under">0.0%</span></td>
+                    <td><span id="payout-${key}" class="payout-text">$0.00</span></td>
                 </tr>
             `;
         });
 
-        // Add Quarter Summary row
-        html += `
-                        <tr class="quarter-summary-row">
-                            <td>Q${q} Total</td>
-                            <td id="q${q}-mrr-total">$0.00</td>
-                            <td><span id="q${q}-mrr-pct" class="pct-badge under-track">0.0%</span></td>
-                            <td id="q${q}-nrr-total">$0.00</td>
-                            <td><span id="q${q}-nrr-pct" class="pct-badge under-track">0.0%</span></td>
-                            <td id="q${q}-payout" class="calc-output">$0.00</td>
+        markup += `
+                        <tr class="summary-row">
+                            <td>Q${q} Summary</td>
+                            <td id="q${q}-mrr-sum">$0.00</td>
+                            <td><span id="q${q}-mrr-pct" class="odoo-badge status-under">0.0%</span></td>
+                            <td id="q${q}-nrr-sum">$0.00</td>
+                            <td><span id="q${q}-nrr-pct" class="odoo-badge status-under">0.0%</span></td>
+                            <td id="q${q}-payout-sum" class="payout-text">$0.00</td>
                         </tr>
                     </tbody>
                 </table>
             </div>
         `;
-        container.innerHTML += html;
+        parent.innerHTML += markup;
     }
 }
 
-// Perform calculations and live updates
-function updateDashboard() {
-    let grandTotalMrr = 0, grandTotalNrr = 0, grandTotalPayout = 0;
-    let quarterData = { 1: {mrr:0, nrr:0, pay:0}, 2: {mrr:0, nrr:0, pay:0}, 3: {mrr:0, nrr:0, pay:0}, 4: {mrr:0, nrr:0, pay:0} };
+// Compute live formulas and layout refreshes
+function refreshCalculation() {
+    let yearMrr = 0, yearNrr = 0, yearPayout = 0;
+    let tracking = { 1: {mrr:0, nrr:0, pay:0}, 2: {mrr:0, nrr:0, pay:0}, 3: {mrr:0, nrr:0, pay:0}, 4: {mrr:0, nrr:0, pay:0} };
 
-    MONTHS_DATA.forEach(month => {
-        const id = month.name.toLowerCase();
-        const mrrVal = parseFloat(document.getElementById(`mrr-${id}`).value) || 0;
-        const nrrVal = parseFloat(document.getElementById(`nrr-${id}`).value) || 0;
+    SEASONS.forEach(month => {
+        const key = month.name.toLowerCase();
+        const mrr = parseFloat(document.getElementById(`mrr-${key}`).value) || 0;
+        const nrr = parseFloat(document.getElementById(`nrr-${key}`).value) || 0;
 
-        // 1. Calculate Monthly Attainment Track Percentages
-        const mrrPct = (mrrVal / QUOTAS.mrr) * 100;
-        const nrrPct = (nrrVal / QUOTAS.nrr) * 100;
+        // 1. Attainment Percentages
+        const mrrPct = (mrr / QUOTAS.mrr) * 100;
+        const nrrPct = (nrr / QUOTAS.nrr) * 100;
 
-        // Update Monthly Badges & Styling
-        const mrrBadge = document.getElementById(`mrr-pct-${id}`);
-        mrrBadge.innerText = mrrPct.toFixed(1) + '%';
-        mrrBadge.className = `pct-badge ${mrrPct >= 100 ? 'on-track' : 'under-track'}`;
+        const mBadge = document.getElementById(`mrr-badge-${key}`);
+        mBadge.innerText = mrrPct.toFixed(1) + '%';
+        mBadge.className = `odoo-badge ${mrrPct >= 100 ? 'status-track' : 'status-under'}`;
 
-        const nrrBadge = document.getElementById(`nrr-pct-${id}`);
-        nrrBadge.innerText = nrrPct.toFixed(1) + '%';
-        nrrBadge.className = `pct-badge ${nrrPct >= 100 ? 'on-track' : 'under-track'}`;
+        const nBadge = document.getElementById(`nrr-badge-${key}`);
+        nBadge.innerText = nrrPct.toFixed(1) + '%';
+        nBadge.className = `odoo-badge ${nrrPct >= 100 ? 'status-track' : 'status-under'}`;
 
-        // 2. Calculate Monthly Commissions Payouts (Progressive breakdown)
-        const mrrComm = getMrrCommission(mrrVal);
-        const nrrComm = getNrrCommission(nrrVal);
-        const totalComm = mrrComm + nrrComm;
+        // 2. Math Processing via Progressive Engines
+        const mrrEarned = calcMrrProgressive(mrr);
+        const nrrEarned = calcNrrProgressive(nrr);
+        const combined = mrrEarned + nrrEarned;
         
-        document.getElementById(`payout-${id}`).innerText = '$' + totalComm.toLocaleString(undefined, {minimumFractionDigits: 2, maximumFractionDigits: 2});
+        document.getElementById(`payout-${key}`).innerText = '$' + combined.toLocaleString(undefined, {minimumFractionDigits: 2, maximumFractionDigits: 2});
 
-        // Accumulate Quarter and Grand Totals
-        quarterData[month.q].mrr += mrrVal;
-        quarterData[month.q].nrr += nrrVal;
-        quarterData[month.q].pay += totalComm;
+        // Sum aggregates
+        tracking[month.q].mrr += mrr;
+        tracking[month.q].nrr += nrr;
+        tracking[month.q].pay += combined;
 
-        grandTotalMrr += mrrVal;
-        grandTotalNrr += nrrVal;
-        grandTotalPayout += totalComm;
+        yearMrr += mrr;
+        yearNrr += nrr;
+        yearPayout += combined;
     });
 
-    // 3. Update Quarter Totals and Targets (Quarter Quota = Monthly Quota * 3)
+    // 3. Quarter Section Calculations (Quarter Goal = Monthly * 3)
     for (let q = 1; q <= 4; q++) {
-        const qMrrQuota = QUOTAS.mrr * 3;
-        const qNrrQuota = QUOTAS.nrr * 3;
+        const qMrrGoal = QUOTAS.mrr * 3;
+        const qNrrGoal = QUOTAS.nrr * 3;
 
-        const qMrrPct = (quarterData[q].mrr / qMrrQuota) * 100;
-        const qNrrPct = (quarterData[q].nrr / qNrrQuota) * 100;
+        const qMrrPct = (tracking[q].mrr / qMrrGoal) * 100;
+        const qNrrPct = (tracking[q].nrr / qNrrGoal) * 100;
 
-        document.getElementById(`q${q}-mrr-total`).innerText = '$' + quarterData[q].mrr.toLocaleString(undefined, {minimumFractionDigits: 2});
-        document.getElementById(`q${q}-nrr-total`).innerText = '$' + quarterData[q].nrr.toLocaleString(undefined, {minimumFractionDigits: 2});
-        document.getElementById(`q${q}-payout`).innerText = '$' + quarterData[q].pay.toLocaleString(undefined, {minimumFractionDigits: 2});
+        document.getElementById(`q${q}-mrr-sum`).innerText = '$' + tracking[q].mrr.toLocaleString(undefined, {minimumFractionDigits: 2});
+        document.getElementById(`q${q}-nrr-sum`).innerText = '$' + tracking[q].nrr.toLocaleString(undefined, {minimumFractionDigits: 2});
+        document.getElementById(`q${q}-payout-sum`).innerText = '$' + tracking[q].pay.toLocaleString(undefined, {minimumFractionDigits: 2});
 
-        const qMrrBadge = document.getElementById(`q${q}-mrr-pct`);
-        qMrrBadge.innerText = qMrrPct.toFixed(1) + '%';
-        qMrrBadge.className = `pct-badge ${qMrrPct >= 100 ? 'on-track' : 'under-track'}`;
+        const qM_Badge = document.getElementById(`q${q}-mrr-pct`);
+        qM_Badge.innerText = qMrrPct.toFixed(1) + '%';
+        qM_Badge.className = `odoo-badge ${qMrrPct >= 100 ? 'status-track' : 'status-under'}`;
 
-        const qNrrBadge = document.getElementById(`q${q}-nrr-pct`);
-        qNrrBadge.innerText = qNrrPct.toFixed(1) + '%';
-        qNrrBadge.className = `pct-badge ${qNrrPct >= 100 ? 'on-track' : 'under-track'}`;
+        const qN_Badge = document.getElementById(`q${q}-nrr-pct`);
+        qN_Badge.innerText = qNrrPct.toFixed(1) + '%';
+        qN_Badge.className = `odoo-badge ${qNrrPct >= 100 ? 'status-track' : 'status-under'}`;
     }
 
-    // 4. Update Grand Annual Totals Card
-    const annualMrrPct = (grandTotalMrr / (QUOTAS.mrr * 12)) * 100;
-    const annualNrrPct = (grandTotalNrr / (QUOTAS.nrr * 12)) * 100;
+    // 4. Update Bottom KPI Analytics Blocks
+    const totalYearMrrPct = (yearMrr / (QUOTAS.mrr * 12)) * 100;
+    const totalYearNrrPct = (yearNrr / (QUOTAS.nrr * 12)) * 100;
 
-    document.getElementById('annual-mrr-pct').innerText = annualMrrPct.toFixed(1) + '%';
-    document.getElementById('annual-nrr-pct').innerText = annualNrrPct.toFixed(1) + '%';
-    document.getElementById('annual-payout').innerText = '$' + grandTotalPayout.toLocaleString(undefined, {minimumFractionDigits: 2, maximumFractionDigits: 2});
+    document.getElementById('annual-mrr-pct').innerText = totalYearMrrPct.toFixed(1) + '%';
+    document.getElementById('annual-nrr-pct').innerText = totalYearNrrPct.toFixed(1) + '%';
+    document.getElementById('annual-payout').innerText = '$' + yearPayout.toLocaleString(undefined, {minimumFractionDigits: 2, maximumFractionDigits: 2});
 }
 
-// Run application setup on start
-buildDashboard();
+// Initial Run
+initSpreadsheet();
 </script>
 
 </body>
