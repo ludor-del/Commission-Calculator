@@ -141,7 +141,7 @@
 
 <div class="dashboard-container">
     <h1>Sales Attainment & Commission Dashboard</h1>
-    <div class="quota-banner">Monthly Target Quotas: <strong>$700 MRR</strong> & <strong>$6,000 NRR</strong></div>
+    <div class="quota-banner">Monthly Target Quotas: <strong>$700 MRR</strong> & <strong>$6,000 NRR</strong> (Rates applied directly per $1)</div>
 
     <div id="quarters-container"></div>
 
@@ -171,19 +171,19 @@ const MONTHS_DATA = [
     { name: "October", q: 4 }, { name: "November", q: 4 }, { name: "December", q: 4 }
 ];
 
-// Tiered Multiplier Logic functions
+// Tiered Multiplier Logic functions (Updated to calculate directly per dollar)
 function getMrrCommission(mrr) {
-    if (mrr <= 349.93) return mrr * (0.3705 / 100);
-    if (mrr <= 489.93) return mrr * (0.9634 / 100);
-    if (mrr <= 699.93) return mrr * (5.5212 / 100);
-    return mrr * (0.65 / 100);
+    if (mrr <= 349.93) return mrr * 0.3705;
+    if (mrr <= 489.93) return mrr * 0.9634;
+    if (mrr <= 699.93) return mrr * 5.5212;
+    return mrr * 0.65;
 }
 
 function getNrrCommission(nrr) {
-    if (nrr <= 2999.40) return nrr * (0.0204 / 100);
-    if (nrr <= 4199.40) return nrr * (0.0388 / 100);
-    if (nrr <= 5999.40) return nrr * (0.2801 / 100);
-    return nrr * (0.042 / 100);
+    if (nrr <= 2999.40) return nrr * 0.0204;
+    if (nrr <= 4199.40) return nrr * 0.0388;
+    if (nrr <= 5999.40) return nrr * 0.2801;
+    return nrr * 0.042;
 }
 
 // Generate UI Spreadsheet tables dynamically
@@ -264,12 +264,12 @@ function updateDashboard() {
         nrrBadge.innerText = nrrPct.toFixed(1) + '%';
         nrrBadge.className = `pct-badge ${nrrPct >= 100 ? 'on-track' : 'under-track'}`;
 
-        // 2. Calculate Monthly Commissions Payouts
+        // 2. Calculate Monthly Commissions Payouts (Direct multiplication)
         const mrrComm = getMrrCommission(mrrVal);
         const nrrComm = getNrrCommission(nrrVal);
         const totalComm = mrrComm + nrrComm;
         
-        document.getElementById(`payout-${id}`).innerText = '$' + totalComm.toFixed(2);
+        document.getElementById(`payout-${id}`).innerText = '$' + totalComm.toLocaleString(undefined, {minimumFractionDigits: 2, maximumFractionDigits: 2});
 
         // Accumulate Quarter and Grand Totals
         quarterData[month.q].mrr += mrrVal;
@@ -289,31 +289,10 @@ function updateDashboard() {
         const qMrrPct = (quarterData[q].mrr / qMrrQuota) * 100;
         const qNrrPct = (quarterData[q].nrr / qNrrQuota) * 100;
 
-        document.getElementById(`q${q}-mrr-total`).innerText = '$' + quarterData[q].mrr.toFixed(2);
-        document.getElementById(`q${q}-nrr-total`).innerText = '$' + quarterData[q].nrr.toFixed(2);
-        document.getElementById(`q${q}-payout`).innerText = '$' + quarterData[q].pay.toFixed(2);
+        document.getElementById(`q${q}-mrr-total`).innerText = '$' + quarterData[q].mrr.toLocaleString(undefined, {minimumFractionDigits: 2});
+        document.getElementById(`q${q}-nrr-total`).innerText = '$' + quarterData[q].nrr.toLocaleString(undefined, {minimumFractionDigits: 2});
+        document.getElementById(`q${q}-payout`).innerText = '$' + quarterData[q].pay.toLocaleString(undefined, {minimumFractionDigits: 2});
 
         const qMrrBadge = document.getElementById(`q${q}-mrr-pct`);
         qMrrBadge.innerText = qMrrPct.toFixed(1) + '%';
-        qMrrBadge.className = `pct-badge ${qMrrPct >= 100 ? 'on-track' : 'under-track'}`;
-
-        const qNrrBadge = document.getElementById(`q${q}-nrr-pct`);
-        qNrrBadge.innerText = qNrrPct.toFixed(1) + '%';
-        qNrrBadge.className = `pct-badge ${qNrrPct >= 100 ? 'on-track' : 'under-track'}`;
-    }
-
-    // 4. Update Grand Annual Totals Card
-    const annualMrrPct = (grandTotalMrr / (QUOTAS.mrr * 12)) * 100;
-    const annualNrrPct = (grandTotalNrr / (QUOTAS.nrr * 12)) * 100;
-
-    document.getElementById('annual-mrr-pct').innerText = annualMrrPct.toFixed(1) + '%';
-    document.getElementById('annual-nrr-pct').innerText = annualNrrPct.toFixed(1) + '%';
-    document.getElementById('annual-payout').innerText = '$' + grandTotalPayout.toFixed(2);
-}
-
-// Run application setup on start
-buildDashboard();
-</script>
-
-</body>
-</html>
+        qMrrBadge.className = `pct-badge ${qMrrPct >= 100 ? 'on-track' : 'under
