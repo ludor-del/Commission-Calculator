@@ -141,7 +141,7 @@
 
 <div class="dashboard-container">
     <h1>Sales Attainment & Commission Dashboard</h1>
-    <div class="quota-banner">Monthly Target Quotas: <strong>$700 MRR</strong> & <strong>$6,000 NRR</strong> (Rates applied directly per $1)</div>
+    <div class="quota-banner">Monthly Target Quotas: <strong>$700 MRR</strong> & <strong>$6,000 NRR</strong> (Progressive Bracketed Logic)</div>
 
     <div id="quarters-container"></div>
 
@@ -171,19 +171,64 @@ const MONTHS_DATA = [
     { name: "October", q: 4 }, { name: "November", q: 4 }, { name: "December", q: 4 }
 ];
 
-// Tiered Multiplier Logic functions (Calculated directly per dollar)
+// Progressive Bracket Calculation for MRR
 function getMrrCommission(mrr) {
-    if (mrr <= 349.93) return mrr * 0.3705;
-    if (mrr <= 489.93) return mrr * 0.9634;
-    if (mrr <= 699.93) return mrr * 5.5212;
-    return mrr * 0.65;
+    let totalComm = 0;
+    let remaining = mrr;
+
+    // Tier 1: Up to 349.93
+    if (remaining > 0) {
+        let chunk = Math.min(remaining, 349.93);
+        totalComm += chunk * 0.3705;
+        remaining -= chunk;
+    }
+    // Tier 2: 349.94 to 489.93 (Width is 140.00)
+    if (remaining > 0) {
+        let chunk = Math.min(remaining, 140.00);
+        totalComm += chunk * 0.9634;
+        remaining -= chunk;
+    }
+    // Tier 3: 489.94 to 699.93 (Width is 210.00)
+    if (remaining > 0) {
+        let chunk = Math.min(remaining, 210.00);
+        totalComm += chunk * 5.5212;
+        remaining -= chunk;
+    }
+    // Tier 4: Over 699.93
+    if (remaining > 0) {
+        totalComm += remaining * 0.65;
+    }
+    return totalComm;
 }
 
+// Progressive Bracket Calculation for NRR
 function getNrrCommission(nrr) {
-    if (nrr <= 2999.40) return nrr * 0.0204;
-    if (nrr <= 4199.40) return nrr * 0.0388;
-    if (nrr <= 5999.40) return nrr * 0.2801;
-    return nrr * 0.042;
+    let totalComm = 0;
+    let remaining = nrr;
+
+    // Tier 1: Up to 2999.40
+    if (remaining > 0) {
+        let chunk = Math.min(remaining, 2999.40);
+        totalComm += chunk * 0.0204;
+        remaining -= chunk;
+    }
+    // Tier 2: 2999.41 to 4199.40 (Width is 1200.00)
+    if (remaining > 0) {
+        let chunk = Math.min(remaining, 1200.00);
+        totalComm += chunk * 0.0388;
+        remaining -= chunk;
+    }
+    // Tier 3: 4199.41 to 5999.40 (Width is 1800.00)
+    if (remaining > 0) {
+        let chunk = Math.min(remaining, 1800.00);
+        totalComm += chunk * 0.2801;
+        remaining -= chunk;
+    }
+    // Tier 4: Over 5999.40
+    if (remaining > 0) {
+        totalComm += remaining * 0.042;
+    }
+    return totalComm;
 }
 
 // Generate UI Spreadsheet tables dynamically
@@ -264,7 +309,7 @@ function updateDashboard() {
         nrrBadge.innerText = nrrPct.toFixed(1) + '%';
         nrrBadge.className = `pct-badge ${nrrPct >= 100 ? 'on-track' : 'under-track'}`;
 
-        // 2. Calculate Monthly Commissions Payouts (Direct multiplication per $1)
+        // 2. Calculate Monthly Commissions Payouts (Progressive breakdown)
         const mrrComm = getMrrCommission(mrrVal);
         const nrrComm = getNrrCommission(nrrVal);
         const totalComm = mrrComm + nrrComm;
