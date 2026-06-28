@@ -35,12 +35,12 @@
             margin: 0 auto;
             background: var(--odoo-white);
             border: 1px solid var(--odoo-gray-medium);
-            border-radius: 4px; /* Odoo typical flat/subtle rounding */
+            border-radius: 4px;
             box-shadow: 0 4px 12px rgba(0,0,0,0.05);
             overflow: hidden;
         }
 
-        /* Top Module Header Bar mimicking Odoo ERP Layout */
+        /* Top Module Header Bar */
         .odoo-top-bar {
             background-color: var(--odoo-purple);
             color: var(--odoo-white);
@@ -127,7 +127,6 @@
             width: 12%;
         }
 
-        /* Form Input Cells matching Odoo backend inputs */
         input[type="number"] {
             width: 85%;
             padding: 6px 10px;
@@ -144,7 +143,6 @@
             box-shadow: 0 0 0 2px rgba(113, 75, 103, 0.15);
         }
 
-        /* Progress & Track Pill Badges */
         .odoo-badge {
             display: inline-block;
             padding: 3px 8px;
@@ -162,7 +160,6 @@
             color: #212529;
         }
 
-        /* Odoo App Summary Footers */
         .summary-row {
             background-color: var(--odoo-gray-light);
             font-weight: 600;
@@ -216,11 +213,11 @@
 <div class="odoo-dashboard">
     <div class="odoo-top-bar">
         <h1>Spreadsheet / Commission Engine</h1>
-        <span style="font-size: 13px; opacity: 0.9;">Scenario A • Progressive Bracket Logic</span>
+        <span style="font-size: 13px; opacity: 0.9;">Scenario A • Progressive YTD Logic</span>
     </div>
 
     <div class="odoo-meta-info">
-        <div style="font-weight: 500;">Annual Performance Strategy Dashboard</div>
+        <div style="font-weight: 500;">YTD Performance Strategy Dashboard</div>
         <div class="quota-tag">Required Monthly Target Goals: <strong>$700 MRR</strong> & <strong>$6,000 NRR</strong></div>
     </div>
 
@@ -228,35 +225,31 @@
 
     <div class="odoo-kpi-panel">
         <div class="kpi-card">
-            <label>Annual MRR Attainment Track</label>
+            <label id="mrr-kpi-label">YTD MRR Attainment Track</label>
             <span id="annual-mrr-pct">0.0%</span>
         </div>
         <div class="kpi-card">
-            <label>Annual NRR Attainment Track</label>
+            <label id="nrr-kpi-label">YTD NRR Attainment Track</label>
             <span id="annual-nrr-pct">0.0%</span>
         </div>
         <div class="kpi-card">
-            <label>Total Combined Commissions Payout</label>
+            <label>Total Commissions Payout (YTD)</label>
             <span id="annual-payout" class="total-earnings">$0.00</span>
         </div>
     </div>
 </div>
 
 <script>
-// Base Data Settings
 const QUOTAS = { mrr: 700, nrr: 6000 };
 const SEASONS = [
-    { name: "January", q: 1 }, { name: "February", q: 1 }, { name: "March", q: 1 },
-    { name: "April", q: 2 }, { name: "May", q: 2 }, { name: "June", q: 2 },
-    { name: "July", q: 3 }, { name: "August", q: 3 }, { name: "September", q: 3 },
-    { name: "October", q: 4 }, { name: "November", q: 4 }, { name: "December", q: 4 }
+    { name: "January", q: 1, index: 0 }, { name: "February", q: 1, index: 1 }, { name: "March", q: 1, index: 2 },
+    { name: "April", q: 2, index: 3 }, { name: "May", q: 2, index: 4 }, { name: "June", q: 2, index: 5 },
+    { name: "July", q: 3, index: 6 }, { name: "August", q: 3, index: 7 }, { name: "September", q: 3, index: 8 },
+    { name: "October", q: 4, index: 9 }, { name: "November", q: 4, index: 10 }, { name: "December", q: 4, index: 11 }
 ];
 
-// Calculation Block for Scenario A Progressive Tiered Rules
 function calcMrrProgressive(mrr) {
-    let payout = 0;
-    let rem = mrr;
-
+    let payout = 0; let rem = mrr;
     if (rem > 0) { let chunk = Math.min(rem, 349.93); payout += chunk * 0.3705; rem -= chunk; }
     if (rem > 0) { let chunk = Math.min(rem, 140.00); payout += chunk * 0.9634; rem -= chunk; }
     if (rem > 0) { let chunk = Math.min(rem, 210.00); payout += chunk * 5.5212; rem -= chunk; }
@@ -265,9 +258,7 @@ function calcMrrProgressive(mrr) {
 }
 
 function calcNrrProgressive(nrr) {
-    let payout = 0;
-    let rem = nrr;
-
+    let payout = 0; let rem = nrr;
     if (rem > 0) { let chunk = Math.min(rem, 2999.40); payout += chunk * 0.0204; rem -= chunk; }
     if (rem > 0) { let chunk = Math.min(rem, 1200.00); payout += chunk * 0.0388; rem -= chunk; }
     if (rem > 0) { let chunk = Math.min(rem, 1800.00); payout += chunk * 0.2801; rem -= chunk; }
@@ -275,7 +266,6 @@ function calcNrrProgressive(nrr) {
     return payout;
 }
 
-// Assemble tables into UI layout
 function initSpreadsheet() {
     const parent = document.getElementById('spreadsheet-workspace');
     
@@ -329,17 +319,19 @@ function initSpreadsheet() {
     }
 }
 
-// Compute live formulas and layout refreshes
 function refreshCalculation() {
     let yearMrr = 0, yearNrr = 0, yearPayout = 0;
     let tracking = { 1: {mrr:0, nrr:0, pay:0}, 2: {mrr:0, nrr:0, pay:0}, 3: {mrr:0, nrr:0, pay:0}, 4: {mrr:0, nrr:0, pay:0} };
+
+    // Identify current active month context to dynamically determine YTD
+    const currentMonthIndex = new Date().getMonth(); 
+    let activeMonthsCount = currentMonthIndex + 1; 
 
     SEASONS.forEach(month => {
         const key = month.name.toLowerCase();
         const mrr = parseFloat(document.getElementById(`mrr-${key}`).value) || 0;
         const nrr = parseFloat(document.getElementById(`nrr-${key}`).value) || 0;
 
-        // 1. Attainment Percentages
         const mrrPct = (mrr / QUOTAS.mrr) * 100;
         const nrrPct = (nrr / QUOTAS.nrr) * 100;
 
@@ -351,24 +343,24 @@ function refreshCalculation() {
         nBadge.innerText = nrrPct.toFixed(1) + '%';
         nBadge.className = `odoo-badge ${nrrPct >= 100 ? 'status-track' : 'status-under'}`;
 
-        // 2. Math Processing via Progressive Engines
         const mrrEarned = calcMrrProgressive(mrr);
         const nrrEarned = calcNrrProgressive(nrr);
         const combined = mrrEarned + nrrEarned;
         
         document.getElementById(`payout-${key}`).innerText = '$' + combined.toLocaleString(undefined, {minimumFractionDigits: 2, maximumFractionDigits: 2});
 
-        // Sum aggregates
         tracking[month.q].mrr += mrr;
         tracking[month.q].nrr += nrr;
         tracking[month.q].pay += combined;
 
-        yearMrr += mrr;
-        yearNrr += nrr;
-        yearPayout += combined;
+        // Collect YTD baseline values up to the current active trailing calendar month
+        if (month.index <= currentMonthIndex) {
+            yearMrr += mrr;
+            yearNrr += nrr;
+        }
+        yearPayout += combined; 
     });
 
-    // 3. Quarter Section Calculations (Quarter Goal = Monthly * 3)
     for (let q = 1; q <= 4; q++) {
         const qMrrGoal = QUOTAS.mrr * 3;
         const qNrrGoal = QUOTAS.nrr * 3;
@@ -389,16 +381,18 @@ function refreshCalculation() {
         qN_Badge.className = `odoo-badge ${qNrrPct >= 100 ? 'status-track' : 'status-under'}`;
     }
 
-    // 4. Update Bottom KPI Analytics Blocks
-    const totalYearMrrPct = (yearMrr / (QUOTAS.mrr * 12)) * 100;
-    const totalYearNrrPct = (yearNrr / (QUOTAS.nrr * 12)) * 100;
+    // Dynamic Year-to-Date Attainment Multiplier base setting
+    const totalYearMrrPct = (yearMrr / (QUOTAS.mrr * activeMonthsCount)) * 100;
+    const totalYearNrrPct = (yearNrr / (QUOTAS.nrr * activeMonthsCount)) * 100;
+
+    document.getElementById('mrr-kpi-label').innerText = `YTD MRR Attainment Track (${activeMonthsCount} Mos)`;
+    document.getElementById('nrr-kpi-label').innerText = `YTD NRR Attainment Track (${activeMonthsCount} Mos)`;
 
     document.getElementById('annual-mrr-pct').innerText = totalYearMrrPct.toFixed(1) + '%';
     document.getElementById('annual-nrr-pct').innerText = totalYearNrrPct.toFixed(1) + '%';
     document.getElementById('annual-payout').innerText = '$' + yearPayout.toLocaleString(undefined, {minimumFractionDigits: 2, maximumFractionDigits: 2});
 }
 
-// Initial Run
 initSpreadsheet();
 </script>
 
