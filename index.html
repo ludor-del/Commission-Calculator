@@ -171,7 +171,7 @@ const MONTHS_DATA = [
     { name: "October", q: 4 }, { name: "November", q: 4 }, { name: "December", q: 4 }
 ];
 
-// Tiered Multiplier Logic functions (Updated to calculate directly per dollar)
+// Tiered Multiplier Logic functions (Calculated directly per dollar)
 function getMrrCommission(mrr) {
     if (mrr <= 349.93) return mrr * 0.3705;
     if (mrr <= 489.93) return mrr * 0.9634;
@@ -264,7 +264,7 @@ function updateDashboard() {
         nrrBadge.innerText = nrrPct.toFixed(1) + '%';
         nrrBadge.className = `pct-badge ${nrrPct >= 100 ? 'on-track' : 'under-track'}`;
 
-        // 2. Calculate Monthly Commissions Payouts (Direct multiplication)
+        // 2. Calculate Monthly Commissions Payouts (Direct multiplication per $1)
         const mrrComm = getMrrCommission(mrrVal);
         const nrrComm = getNrrCommission(nrrVal);
         const totalComm = mrrComm + nrrComm;
@@ -295,4 +295,25 @@ function updateDashboard() {
 
         const qMrrBadge = document.getElementById(`q${q}-mrr-pct`);
         qMrrBadge.innerText = qMrrPct.toFixed(1) + '%';
-        qMrrBadge.className = `pct-badge ${qMrrPct >= 100 ? 'on-track' : 'under
+        qMrrBadge.className = `pct-badge ${qMrrPct >= 100 ? 'on-track' : 'under-track'}`;
+
+        const qNrrBadge = document.getElementById(`q${q}-nrr-pct`);
+        qNrrBadge.innerText = qNrrPct.toFixed(1) + '%';
+        qNrrBadge.className = `pct-badge ${qNrrPct >= 100 ? 'on-track' : 'under-track'}`;
+    }
+
+    // 4. Update Grand Annual Totals Card
+    const annualMrrPct = (grandTotalMrr / (QUOTAS.mrr * 12)) * 100;
+    const annualNrrPct = (grandTotalNrr / (QUOTAS.nrr * 12)) * 100;
+
+    document.getElementById('annual-mrr-pct').innerText = annualMrrPct.toFixed(1) + '%';
+    document.getElementById('annual-nrr-pct').innerText = annualNrrPct.toFixed(1) + '%';
+    document.getElementById('annual-payout').innerText = '$' + grandTotalPayout.toLocaleString(undefined, {minimumFractionDigits: 2, maximumFractionDigits: 2});
+}
+
+// Run application setup on start
+buildDashboard();
+</script>
+
+</body>
+</html>
