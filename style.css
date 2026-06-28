@@ -1,0 +1,196 @@
+/* ODOO BRAND VARIABLES */
+:root {
+    --odoo-purple: #714B67;
+    --odoo-teal: #017E84;
+    --odoo-gray-dark: #4c4c4c;
+    --odoo-gray-medium: #dee2e6;
+    --odoo-gray-light: #f8f9fa;
+    --odoo-white: #ffffff;
+    --odoo-red-bg: #fce8e6;
+    --odoo-red-text: #c5221f;
+    --odoo-green-bg: #e6f4ea;
+    --odoo-green-text: #137333;
+}
+
+body {
+    font-family: 'Inter', sans-serif;
+    background-color: #f1f3f5;
+    margin: 0;
+    padding: 30px;
+    color: var(--odoo-gray-dark);
+}
+
+.odoo-dashboard {
+    max-width: 1250px;
+    margin: 0 auto;
+    background: var(--odoo-white);
+    border: 1px solid var(--odoo-gray-medium);
+    border-radius: 4px;
+    box-shadow: 0 4px 12px rgba(0,0,0,0.05);
+    overflow: hidden;
+}
+
+.odoo-top-bar {
+    background-color: var(--odoo-purple);
+    color: var(--odoo-white);
+    padding: 15px 25px;
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+}
+
+.odoo-top-bar h1 {
+    margin: 0;
+    font-size: 20px;
+    font-weight: 600;
+    letter-spacing: 0.5px;
+}
+
+.odoo-meta-info {
+    background-color: var(--odoo-white);
+    padding: 20px 25px;
+    border-bottom: 1px solid var(--odoo-gray-medium);
+    font-size: 14px;
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+}
+
+.quota-tag {
+    background-color: var(--odoo-gray-light);
+    border: 1px solid var(--odoo-gray-medium);
+    padding: 6px 12px;
+    border-radius: 3px;
+    font-weight: 500;
+}
+
+.quota-tag strong {
+    color: var(--odoo-purple);
+}
+
+.quarter-block {
+    margin: 25px;
+    border: 1px solid var(--odoo-gray-medium);
+    border-radius: 3px;
+    overflow: hidden;
+}
+
+.quarter-title-bar {
+    background-color: var(--odoo-gray-light);
+    border-bottom: 1px solid var(--odoo-gray-medium);
+    color: var(--odoo-purple);
+    font-weight: 600;
+    font-size: 15px;
+    padding: 10px 15px;
+}
+
+table {
+    width: 100%;
+    border-collapse: collapse;
+    text-align: left;
+    background: var(--odoo-white);
+    font-size: 14px;
+}
+
+th {
+    background-color: var(--odoo-white);
+    color: var(--odoo-gray-dark);
+    font-weight: 600;
+    padding: 10px 15px;
+    border-bottom: 2px solid var(--odoo-purple);
+    text-transform: uppercase;
+    font-size: 12px;
+    letter-spacing: 0.5px;
+}
+
+td {
+    padding: 10px 15px;
+    border-bottom: 1px solid var(--odoo-gray-medium);
+    vertical-align: middle;
+}
+
+.month-col {
+    font-weight: 600;
+    color: #212529;
+    width: 12%;
+}
+
+input[type="number"] {
+    width: 85%;
+    padding: 6px 10px;
+    border: 1px solid #ccc;
+    border-radius: 3px;
+    font-size: 14px;
+    font-family: inherit;
+    transition: border-color 0.15s ease-in-out;
+}
+
+input[type="number"]:focus {
+    border-color: var(--odoo-purple);
+    outline: none;
+    box-shadow: 0 0 0 2px rgba(113, 75, 103, 0.15);
+}
+
+.odoo-badge {
+    display: inline-block;
+    padding: 3px 8px;
+    border-radius: 3px;
+    font-weight: 600;
+    font-size: 12px;
+}
+
+.status-under { background-color: var(--odoo-red-bg); color: var(--odoo-red-text); }
+.status-track { background-color: var(--odoo-green-bg); color: var(--odoo-green-text); }
+
+.payout-text {
+    font-family: monospace;
+    font-weight: 700;
+    font-size: 14px;
+    color: #212529;
+}
+
+.summary-row {
+    background-color: var(--odoo-gray-light);
+    font-weight: 600;
+}
+
+.summary-row td {
+    border-top: 2px solid var(--odoo-gray-medium);
+    color: var(--odoo-purple);
+}
+
+.odoo-kpi-panel {
+    background: var(--odoo-gray-light);
+    border-top: 1px solid var(--odoo-gray-medium);
+    padding: 25px;
+    display: grid;
+    grid-template-columns: repeat(3, 1fr);
+    gap: 20px;
+}
+
+.kpi-card {
+    background: var(--odoo-white);
+    border: 1px solid var(--odoo-gray-medium);
+    border-radius: 4px;
+    padding: 15px 20px;
+    text-align: left;
+}
+
+.kpi-card label {
+    display: block;
+    font-size: 12px;
+    color: #777;
+    text-transform: uppercase;
+    font-weight: 600;
+    margin-bottom: 5px;
+}
+
+.kpi-card span {
+    font-size: 26px;
+    font-weight: 700;
+    color: var(--odoo-purple);
+}
+
+.kpi-card .total-earnings {
+    color: var(--odoo-teal);
+}
